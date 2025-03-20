@@ -5,7 +5,7 @@ const userAuth = async (req, res,next) => {
     const cookies = req.cookies;
     const { token } = cookies;
     if (!token) {
-      throw new Error("Invalid tokkkkkken");
+      return res.status(401).send("Unauthorized error")
     }
     const decodedMessage = await jwt.verify(token, "DEV@!@#$");
     const { _id } = decodedMessage;
@@ -16,7 +16,7 @@ const userAuth = async (req, res,next) => {
     req.user=user;
     next();
   } catch (err) {
-    res.status(400).send("Error: " + err.message);
+    res.status(400).send(err.message);
   }
 };
 module.exports = {
