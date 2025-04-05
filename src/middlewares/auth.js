@@ -5,7 +5,7 @@ const userAuth = async (req, res,next) => {
     const cookies = req.cookies;
     const { token } = cookies;
     if (!token) {
-      return res.status(401).send("Unauthorized error")
+      return res.status(401).send("No Credentials Found")
     }
     const decodedMessage = await jwt.verify(token, "DEV@!@#$");
     const { _id } = decodedMessage;

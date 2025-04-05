@@ -12,7 +12,7 @@ authRouter.post("/signup", async (req, res) => {
   
     try {
       validateData(req);
-      const { password, firstName, lastName, emailId } = req.body;
+      const { password, firstName, lastName, emailId ,photoURL,about,gender,age,skills} = req.body;
       const hashedPass = await bcrypt.hash(password, 10);
       // console.log(hashedPass);
       const user = new User({
@@ -20,11 +20,17 @@ authRouter.post("/signup", async (req, res) => {
         lastName,
         emailId,
         password: hashedPass,
+        photoURL,
+        about,
+        gender,
+        skills,
       });
-      await user.save();
-      res.send("Data saved successfully in DB");
+      const savedUser=await user.save();
+      const token = await savedUser.getJWT();
+      res.cookie("token", token);
+      res.json({message:"User addes succeesfullt",data:savedUser});
     } catch (err) {
-      res.status(400).send("Error savinf the user: " + err.message);
+      res.status(400).send("Error saving the user: " + err.message);
     }
   });
   
@@ -34,7 +40,7 @@ authRouter.post("/signup", async (req, res) => {
       const { emailId, password } = req.body;
       const user = await User.findOne({ emailId: emailId });
       if (!user) {
-        throw new Error("INvalid credentials");
+        throw new Error("Invalid credentials");
       } else {
         const isPassVal = await user.validatePassword(password);
         //
@@ -48,7 +54,7 @@ authRouter.post("/signup", async (req, res) => {
         }
       }
     } catch (err) {
-      res.status(400).send(err.message);
+      res.status(400).send("Invalid Credentials!!");
     }
   });
 

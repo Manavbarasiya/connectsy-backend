@@ -1,6 +1,6 @@
 const validate = require("validator");
 const validateData = (req) => {
-  const { firstName, lastName, emailId, password } = req.body;
+  const { firstName, lastName, emailId, password, photoURL } = req.body;
   if (!firstName || !lastName) {
     throw new Error("FirstName/LastName missing");
   } else if (!validate.isEmail(emailId)) {

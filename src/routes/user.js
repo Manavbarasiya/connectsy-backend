@@ -10,15 +10,56 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
     const pendingRequests = await ConnectionRequest.find({
       toUserId: loggedInUser._id,
       status: "interested",
-    }).populate("fromUserId", ["firstName", "lastName"]);
+    }).populate("fromUserId", ["firstName", "lastName","age","gender","about","photoURL","skills"]);
     res.json({
       message: "Data fetched succesafully",
       pendingRequests,
     });
   } catch (err) {
+    
     res.status(400).send("Error: " + err.message);
   }
 });
+userRouter.get("/user/requests/requested",userAuth,async (req,res)=>{
+    // console.log("INcominggg")
+    const loggedInUser=req.user;
+    try{
+      const sentRequest=await ConnectionRequest.find({
+        fromUserId:loggedInUser._id,
+        status:"interested"
+      }).populate("toUserId", ["firstName", "lastName","age","gender","about","photoURL","skills"]);
+      res.json({sentRequest});
+    }catch(err){
+      res.status(400).json({message:err.message});
+    }
+})
+
+userRouter.delete("/request/cancel/:id", userAuth, async (req, res) => {
+  try {
+    const loggedInUser = req.user;
+    const requestId = req.params.id;
+
+    const request = await ConnectionRequest.findById(requestId);
+
+    if (!request) {
+      return res.status(404).json({ message: "Request not found" });
+    }
+
+    if (
+      request.fromUserId.toString() !== loggedInUser._id.toString() ||
+      request.status !== "interested"
+    ) {
+      return res.status(403).json({ message: "You can only cancel pending requests you sent." });
+    }
+
+    await ConnectionRequest.findByIdAndDelete(requestId);
+
+    res.json({ message: "Request unsent successfully" });
+  } catch (err) {
+    res.status(500).json({ message: "Server error: " + err.message });
+  }
+});
+
 
 userRouter.get("/user/connections", userAuth, async (req, res) => {
   try {
@@ -29,8 +70,8 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { toUserId: loggedInUser._id, status: "accepted" },
       ],
     })
-      .populate("fromUserId", "firstName lastName age")
-      .populate("toUserId", "firstName lastName age");
+      .populate("fromUserId", "firstName lastName age about gender photoURL skills")
+      .populate("toUserId", "firstName lastName age about gender photoURL skills");
 
     const data = connections.map((row) => {
       if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
@@ -65,16 +106,13 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
       hideUsersFromFeed.add(req.fromUserId.toString());
       hideUsersFromFeed.add(req.toUserId.toString());
     });
-    //   console.log(hideUsersFromFeed);
     const users = await User.find({
       $and: [
         { _id: { $nin: Array.from(hideUsersFromFeed) } },
         { _id: { $ne: loggedInUser._id } },
       ],
     })
-      .select("firstName lastName age gender about skills")
-      .skip(skip)
-      .limit(limit);
+      .select("firstName lastName age gender about skills photoURL")
 
     res.send(users);
   } catch (err) {

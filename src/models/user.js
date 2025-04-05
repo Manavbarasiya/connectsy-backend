@@ -2,6 +2,7 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+
 const userSchema = new mongoose.Schema(
   {
     firstName: {
@@ -36,11 +37,7 @@ const userSchema = new mongoose.Schema(
     },
     photoURL: {
       type: String,
-      validate(value) {
-        if (!validator.isURL(value)) {
-          throw new Error("URL not valid");
-        }
-      },
+      default: "", // You still have an empty string as the default value
     },
     about: {
       type: String,
@@ -55,6 +52,14 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+// Pre-save hook to check and set the default photoURL if it's empty
+userSchema.pre("save", function (next) {
+  if (!this.photoURL && this.firstName && this.lastName) {
+    this.photoURL = `https://robohash.org/${this.firstName}-${this.lastName}.png`;
+  }
+  next();
+});
+
 userSchema.methods.getJWT = async function () {
   const user = this;
   const token = await jwt.sign({ _id: user._id }, "DEV@!@#$", {
@@ -63,11 +68,10 @@ userSchema.methods.getJWT = async function () {
   return token;
 };
 
-userSchema.methods.validatePassword= async function(passwordByInput){
-    const user=this;
-    // const hashed
-    const isPasswordValid=await bcrypt.compare(passwordByInput, user.password);
-    return isPasswordValid;
-}
+userSchema.methods.validatePassword = async function (passwordByInput) {
+  const user = this;
+  const isPasswordValid = await bcrypt.compare(passwordByInput, user.password);
+  return isPasswordValid;
+};
 
 module.exports = mongoose.model("User", userSchema);

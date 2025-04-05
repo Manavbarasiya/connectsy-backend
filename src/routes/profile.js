@@ -19,13 +19,13 @@ profileRouter.get("/profile/view", userAuth, async (req, res) => {
   profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     try {
         if(!validateUserEditData(req)){
-            throw new Error("INvalid request you mf");
+            throw new Error("Invalid request you mf");
         }
         const loggedUser=req.user;
 
         Object.keys(req.body).forEach((k)=>loggedUser[k]=req.body[k]);
         await loggedUser.save();
-        res.send("Edit success");
+        res.send(loggedUser);
 
     } catch (err) {
       res.status(400).send("Error: " + err.message);
