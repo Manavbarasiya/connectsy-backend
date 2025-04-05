@@ -3,6 +3,8 @@ const axios = require("axios"); // Make sure axios is installed for HTTP request
 const connectDB = require("./config/database");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
+
+require("dotenv").config();
 const app = express();
 
 // CORS Configuration
