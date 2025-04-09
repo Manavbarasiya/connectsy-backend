@@ -1,11 +1,14 @@
+require("dotenv").config();
+
 const express = require("express");
 const axios = require("axios"); // Make sure axios is installed for HTTP requests
 const connectDB = require("./config/database");
 const cookieParser = require("cookie-parser");
 const cors = require("cors");
-
-require("dotenv").config();
 const app = express();
+const http=require("http")
+
+
 
 // CORS Configuration
 app.use(
@@ -24,18 +27,28 @@ const authRouter = require("./routes/auth");
 const profileRouter = require("./routes/profile");
 const requestRouter = require("./routes/requests");
 const userRouter = require("./routes/user");
+const paymentRouter = require("./routes/payment");
+const initializeSocket=require("./utils/socket");
+const chatRouter = require("./routes/chat");
+const photoRouter = require("./routes/photos");
 
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
 app.use("/", userRouter);
+app.use("/",paymentRouter);
+app.use("/",chatRouter);
+app.use("/",photoRouter);
+app.use("/uploads", express.static("uploads"));
 
 
+const server=http.createServer(app);
 
+initializeSocket(server);
 // Connect to Database and Start Server
 connectDB()
   .then(() => {
-    app.listen(3000, () => {
+    server.listen(3000, () => {
       console.log("Server is running on http://localhost:3000");
     });
   })

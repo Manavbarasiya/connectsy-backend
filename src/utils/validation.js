@@ -1,6 +1,6 @@
 const validate = require("validator");
 const validateData = (req) => {
-  const { firstName, lastName, emailId, password, photoURL } = req.body;
+  const { firstName, lastName, emailId, password, photoURL,photos } = req.body;
   if (!firstName || !lastName) {
     throw new Error("FirstName/LastName missing");
   } else if (!validate.isEmail(emailId)) {
@@ -18,7 +18,8 @@ const validateUserEditData = (req) => {
     "gender",
     "about",
     "skills",
-    "photoURL"
+    "photoURL",
+    "photos"
   ];
   const isValid=Object.keys(req.body).every((field)=>{
     return ALLOWED_FIELDS.includes(field);

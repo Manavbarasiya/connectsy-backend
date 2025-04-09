@@ -10,7 +10,7 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
     const pendingRequests = await ConnectionRequest.find({
       toUserId: loggedInUser._id,
       status: "interested",
-    }).populate("fromUserId", ["firstName", "lastName","age","gender","about","photoURL","skills"]);
+    }).populate("fromUserId", ["firstName", "lastName","age","gender","about","photoURL","skills","photos"]);
     res.json({
       message: "Data fetched succesafully",
       pendingRequests,
@@ -27,7 +27,7 @@ userRouter.get("/user/requests/requested",userAuth,async (req,res)=>{
       const sentRequest=await ConnectionRequest.find({
         fromUserId:loggedInUser._id,
         status:"interested"
-      }).populate("toUserId", ["firstName", "lastName","age","gender","about","photoURL","skills"]);
+      }).populate("toUserId", ["firstName", "lastName","age","gender","about","photoURL","skills","photos"]);
       res.json({sentRequest});
     }catch(err){
       res.status(400).json({message:err.message});
@@ -70,8 +70,8 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { toUserId: loggedInUser._id, status: "accepted" },
       ],
     })
-      .populate("fromUserId", "firstName lastName age about gender photoURL skills")
-      .populate("toUserId", "firstName lastName age about gender photoURL skills");
+      .populate("fromUserId", "firstName lastName age about gender photoURL skills photos")
+      .populate("toUserId", "firstName lastName age about gender photoURL skills photos");
 
     const data = connections.map((row) => {
       if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
@@ -91,16 +91,9 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
 userRouter.get("/user/feed", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
-    const page = parseInt(req.query.page) || 1;
-    let limit = parseInt(req.query.limit) || 10;
-    limit = limit > 50 ? 50 : limit;
-
-    const skip = (page - 1) * limit;
     const dataFeed = await ConnectionRequest.find({
       $or: [{ fromUserId: loggedInUser._id }, { toUserId: loggedInUser._id }],
     }).select("fromUserId  toUserId");
-    //   .populate("fromUserId", "firstName")
-    //   .populate("toUserId", "firstName");
     const hideUsersFromFeed = new Set();
     dataFeed.forEach((req) => {
       hideUsersFromFeed.add(req.fromUserId.toString());
@@ -112,11 +105,20 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
         { _id: { $ne: loggedInUser._id } },
       ],
     })
-      .select("firstName lastName age gender about skills photoURL")
+      .select("firstName lastName age gender about skills photoURL photos")
 
     res.send(users);
   } catch (err) {
     res.status(400).send("Error : " + err.message);
+  }
+});
+
+userRouter.get("/user/:id", userAuth, async (req, res) => {
+  try {
+    const user = await User.findById(req.params.id).select("firstName lastName age gender about skills photoURL photos");
+    res.json(user);
+  } catch (err) {
+    res.status(500).json({ message: "User not found" });
   }
 });
 

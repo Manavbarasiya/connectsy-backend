@@ -37,7 +37,11 @@ const userSchema = new mongoose.Schema(
     },
     photoURL: {
       type: String,
-      default: "", // You still have an empty string as the default value
+      default: "",
+    },
+    photos: {
+      type: [String], // This is where multiple uploaded images will go (filenames or Cloudinary URLs)
+      default: [],
     },
     about: {
       type: String,
@@ -52,7 +56,7 @@ const userSchema = new mongoose.Schema(
   }
 );
 
-// Pre-save hook to check and set the default photoURL if it's empty
+// Set a fallback image using robohash if no image is provided
 userSchema.pre("save", function (next) {
   if (!this.photoURL && this.firstName && this.lastName) {
     this.photoURL = `https://robohash.org/${this.firstName}-${this.lastName}.png`;
@@ -70,8 +74,7 @@ userSchema.methods.getJWT = async function () {
 
 userSchema.methods.validatePassword = async function (passwordByInput) {
   const user = this;
-  const isPasswordValid = await bcrypt.compare(passwordByInput, user.password);
-  return isPasswordValid;
+  return await bcrypt.compare(passwordByInput, user.password);
 };
 
 module.exports = mongoose.model("User", userSchema);
