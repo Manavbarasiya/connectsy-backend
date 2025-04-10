@@ -39,7 +39,7 @@ const paymentSchema=new mongoose.Schema({
         membershipType:{
             type:String
         }
-    },
+    }
 },{timestamps:true})
 
 module.exports = mongoose.model("Payment", paymentSchema);

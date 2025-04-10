@@ -12,7 +12,7 @@ authRouter.post("/signup", async (req, res) => {
   
     try {
       validateData(req);
-      const { password, firstName, lastName, emailId ,photoURL,about,gender,age,skills,photos} = req.body;
+      const { password, firstName, lastName, emailId ,photoURL,about,gender,age,skills,photos,isVerified} = req.body;
       const hashedPass = await bcrypt.hash(password, 10);
       // console.log(hashedPass);
       const user = new User({
@@ -25,6 +25,7 @@ authRouter.post("/signup", async (req, res) => {
         gender,
         skills,
         photos,
+        isVerified
       });
       const savedUser=await user.save();
       const token = await savedUser.getJWT();
@@ -66,8 +67,4 @@ authRouter.post("/signup", async (req, res) => {
     res.send("Logout succesfull")
   });
   
-
-
-
-
 module.exports=authRouter;

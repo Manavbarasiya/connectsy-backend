@@ -11,7 +11,7 @@ const upload = multer({ storage });
 photoRouter.post(
   "/profile/upload-photos",
   userAuth,
-  upload.array("photos", 5),
+  upload.array("photos", 6),
   async (req, res) => {
     try {
       const user = await User.findById(req.user._id);
