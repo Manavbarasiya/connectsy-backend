@@ -46,7 +46,6 @@ paymentRouter.post("/payment/verify", userAuth, async (req, res) => {
   try {
     const { orderId, paymentId, signature } = req.body;
 
-    // Signature verification
     const generatedSignature = crypto
       .createHmac("sha256", process.env.RAZORPAY_SECRET_KEY)
       .update(orderId + "|" + paymentId)
@@ -56,7 +55,6 @@ paymentRouter.post("/payment/verify", userAuth, async (req, res) => {
       return res.status(400).json({ success: false, message: "Invalid signature" });
     }
 
-    // 🔥 Update payment status from "created" → "captured"
     const updatedPayment = await Payment.findOneAndUpdate(
       { orderId },
       {
