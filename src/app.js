@@ -11,12 +11,7 @@ const http=require("http")
 
 
 // CORS Configuration
-app.use(
-  cors({
-    origin: "https://connectsy-frontend.vercel.app", // Replace with your frontend URL
-    credentials: true, // ✅ Allows sending cookies
-  })
-);
+app.use(cors());
 
 // Middleware
 app.use(express.json()); // Parse incoming JSON requests
