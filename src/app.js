@@ -11,7 +11,7 @@ const http=require("http")
 
 app.use(
   cors({
-    origin: "http://localhost:5173", // your frontend URL
+    origin: "https://connectsy-frontend.onrender.com", // your frontend URL
     credentials: true,               // allow cookies
   })
 );
@@ -30,6 +30,7 @@ const initializeSocket=require("./utils/socket");
 const chatRouter = require("./routes/chat");
 const photoRouter = require("./routes/photos");
 
+
 app.use("/", authRouter);
 app.use("/", profileRouter);
 app.use("/", requestRouter);
@@ -44,10 +45,11 @@ const server=http.createServer(app);
 
 initializeSocket(server);
 // Connect to Database and Start Server
+const PORT = process.env.PORT || 3000;
 connectDB()
   .then(() => {
-    server.listen(3000, () => {
-      console.log("Server is running on http://localhost:3000");
+    server.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
     });
   })
   .catch((err) => {
