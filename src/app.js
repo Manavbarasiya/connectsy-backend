@@ -9,9 +9,12 @@ const app = express();
 const http=require("http")
 
 
-
-// CORS Configuration
-app.use(cors());
+app.use(
+  cors({
+    origin: "http://localhost:5173", // your frontend URL
+    credentials: true,               // allow cookies
+  })
+);
 
 // Middleware
 app.use(express.json()); // Parse incoming JSON requests
