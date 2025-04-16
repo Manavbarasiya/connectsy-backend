@@ -10,30 +10,70 @@ userRouter.get("/user/requests/received", userAuth, async (req, res) => {
     const pendingRequests = await ConnectionRequest.find({
       toUserId: loggedInUser._id,
       status: "interested",
-    }).populate("fromUserId", ["firstName", "lastName","age","gender","about","photoURL","skills","photos","isVerified"]);
+    }).populate("fromUserId", [
+      "firstName",
+      "lastName",
+      "age",
+      "gender",
+      "about",
+      "photoURL",
+      "skills",
+      "photos",
+      "isVerified",
+    ]);
     res.json({
       message: "Data fetched succesafully",
       pendingRequests,
     });
   } catch (err) {
-    
     res.status(400).send("Error: " + err.message);
   }
 });
-userRouter.get("/user/requests/requested",userAuth,async (req,res)=>{
-    // console.log("INcominggg")
-    const loggedInUser=req.user;
-    try{
-      const sentRequest=await ConnectionRequest.find({
-        fromUserId:loggedInUser._id,
-        status:"interested"
-      }).populate("toUserId", ["firstName", "lastName","age","gender","about","photoURL","skills","photos","isVerified"]);
-      res.json({sentRequest});
-    }catch(err){
-      res.status(400).json({message:err.message});
-    }
-})
-
+userRouter.get("/user/requests/requested", userAuth, async (req, res) => {
+  // console.log("INcominggg")
+  const loggedInUser = req.user;
+  try {
+    const sentRequest = await ConnectionRequest.find({
+      fromUserId: loggedInUser._id,
+      status: "interested",
+    }).populate("toUserId", [
+      "firstName",
+      "lastName",
+      "age",
+      "gender",
+      "about",
+      "photoURL",
+      "skills",
+      "photos",
+      "isVerified",
+    ]);
+    res.json({ sentRequest });
+  } catch (err) {
+    res.status(400).json({ message: err.message });
+  }
+});
+userRouter.get("/user/ignored", userAuth, async (req, res) => {
+  const user = req.user;
+  try {
+    const ignored = await ConnectionRequest.find({
+      fromUserId: user._id,
+      status: "ignored",
+    }).populate("toUserId", [
+      "firstName",
+      "lastName",
+      "age",
+      "gender",
+      "about",
+      "photoURL",
+      "skills",
+      "photos",
+      "isVerified",
+    ]);
+    res.json({ ignored });
+  } catch(err) {
+    res.status(400).json({ message: err.message });
+  }
+});
 userRouter.delete("/request/cancel/:id", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -49,7 +89,9 @@ userRouter.delete("/request/cancel/:id", userAuth, async (req, res) => {
       request.fromUserId.toString() !== loggedInUser._id.toString() ||
       request.status !== "interested"
     ) {
-      return res.status(403).json({ message: "You can only cancel pending requests you sent." });
+      return res
+        .status(403)
+        .json({ message: "You can only cancel pending requests you sent." });
     }
 
     await ConnectionRequest.findByIdAndDelete(requestId);
@@ -60,7 +102,6 @@ userRouter.delete("/request/cancel/:id", userAuth, async (req, res) => {
   }
 });
 
-
 userRouter.get("/user/connections", userAuth, async (req, res) => {
   try {
     const loggedInUser = req.user;
@@ -70,8 +111,14 @@ userRouter.get("/user/connections", userAuth, async (req, res) => {
         { toUserId: loggedInUser._id, status: "accepted" },
       ],
     })
-      .populate("fromUserId", "firstName lastName age about gender photoURL skills photos isVerified")
-      .populate("toUserId", "firstName lastName age about gender photoURL skills photos isVerified");
+      .populate(
+        "fromUserId",
+        "firstName lastName age about gender photoURL skills photos isVerified"
+      )
+      .populate(
+        "toUserId",
+        "firstName lastName age about gender photoURL skills photos isVerified"
+      );
 
     const data = connections.map((row) => {
       if (row.fromUserId._id.toString() === loggedInUser._id.toString()) {
@@ -104,8 +151,9 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
         { _id: { $nin: Array.from(hideUsersFromFeed) } },
         { _id: { $ne: loggedInUser._id } },
       ],
-    })
-      .select("firstName lastName age gender about skills photoURL photos isVerified")
+    }).select(
+      "firstName lastName age gender about skills photoURL photos isVerified"
+    );
 
     res.send(users);
   } catch (err) {
@@ -115,7 +163,9 @@ userRouter.get("/user/feed", userAuth, async (req, res) => {
 
 userRouter.get("/user/:id", userAuth, async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("firstName lastName age gender about skills photoURL photos isVerified");
+    const user = await User.findById(req.params.id).select(
+      "firstName lastName age gender about skills photoURL photos isVerified"
+    );
     res.json(user);
   } catch (err) {
     res.status(500).json({ message: "User not found" });

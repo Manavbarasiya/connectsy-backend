@@ -73,4 +73,24 @@ requestRouter.post("/request/review/:status/:requestId",userAuth,async (req,res)
     res.send("Connection request "+status);
 
 })
+
+requestRouter.post("/request/ignored/interested/:toUserId",userAuth,async (req,res)=>{
+  
+    const loggedInUser=req.user._id;
+    const toUserId=req.params.toUserId;
+    const connectionRequest=await ConnectionRequest.findOne({
+      fromUserId:loggedInUser._id,
+      toUserId:toUserId,
+      status:"ignored"
+    })
+    if(!connectionRequest){
+      return res.status(400).json({
+        message:"Connection request not sent"
+      });
+    }
+    console.log("Connection request",connectionRequest);
+    connectionRequest.status="interested";
+    await connectionRequest.save();
+    res.send("Connection request "+connectionRequest.status);
+})
 module.exports = requestRouter;
